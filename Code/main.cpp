@@ -19,19 +19,23 @@ int main()
 	Texture mandelTexture;
 	Sprite mandelSprite;
 
+	//Creates a zoom boarder for zooming in
 	RectangleShape zoomBorder(Vector2f(width / 2, height / 2));
 	zoomBorder.setFillColor(Color(0, 0, 0, 0));
 	zoomBorder.setOutlineColor(Color(0, 126, 126, 126));
-	zoomBorder.setOutlineThickness(1.0f);
+	zoomBorder.setOutlineThickness(3.0f);
 	zoomBorder.setOrigin(Vector2f(zoomBorder.getSize().x / 2, zoomBorder.getSize().y / 2));
 
+	//Creates a zoom boarder for zooming out
 	RectangleShape zoomBorder2(Vector2f(width * 2, height * 2));
 	zoomBorder2.setFillColor(Color(0, 0, 0, 0));
 	zoomBorder2.setOutlineColor(Color(0, 126, 126, 126));
 	zoomBorder2.setOutlineThickness(1.0f);
 	zoomBorder2.setOrigin(Vector2f(zoomBorder2.getSize().x / 2, zoomBorder2.getSize().y / 2));
 	
+	//Initializes the first Mandle image
 	Plane.Initialize();
+
 	mandelTexture = mandelbrot(width, height, Plane.get_Rx(), Plane.get_Rw(), Plane.get_Ry(), Plane.get_Rh(), Plane.getZoom());
 
 	Font font;
@@ -53,24 +57,28 @@ int main()
                 window.close();
 			}
 		}
-		
+		// Zooms in if user left clicks
 		if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
 		{
 			Plane.ZoomIn(zoomBorder);
 			mandelTexture = mandelbrot(width, height, Plane.get_Rx(), Plane.get_Rw(), Plane.get_Ry(), Plane.get_Rh(), Plane.getZoom());
 		}
+		// Zooms out if user right clicks
 		if (sf::Mouse::isButtonPressed(sf::Mouse::Right))
 		{
 			in = false;
 			Plane.ZoomOut(zoomBorder2, zoomBorder);
 			mandelTexture = mandelbrot(width, height, Plane.get_Rx(), Plane.get_Rw(), Plane.get_Ry(), Plane.get_Rh(), Plane.getZoom());
-			
 		}
 
+		//Passes the current zoom boarder dimentions in order to calculate next x/y coordinates
 		Plane.ZoomIn2(zoomBorder);
+
+		//Constantly loads and refreshes the text with mouse positions 
 		CenterText.setPosition(Vector2f(0, 32));
 		CenterText.setString(Plane.LoadText());
 		
+		//Moves zoom boarder to mouse position 
 		zoomBorder.setPosition(Mouse::getPosition(window).x, Mouse::getPosition(window).y);
 
 		mandelSprite.setTexture(mandelTexture);
@@ -109,14 +117,18 @@ Texture mandelbrot(int width, int height, double xmin, double xmax, double ymin,
 			double x = xmin + (xmax - xmin) * index / (width - 1.0);
 			double y = ymin + (ymax - ymin) * i / (height - 1.0);
 
+			//findes mandle points
 			int Ipoint = Plane.FindMandle(x, y);
+
 
 			int ppos = 4 * (width * i + index);
 
+			//changes colors of mandel points 
 			int hue = ((Ipoint * Ipoint) % 256);
 			int sat = ((sqrt(static_cast<int>(Ipoint) % 256)));
 			int val = ((Ipoint * Ipoint) % 256);
 
+			//Changes calculations into colors
 			Color IterationstoRGB = Color (hue, sat, val);
 			pixels[ppos] = (int)IterationstoRGB.r;
 			pixels[ppos + 1] = (int)IterationstoRGB.g;
@@ -124,7 +136,7 @@ Texture mandelbrot(int width, int height, double xmin, double xmax, double ymin,
 			pixels[ppos + 3] = 255;
 		}
 	}
-
+	//updates the texture with new coordinates and colors depending on pixels[]
 	texture.update(pixels, width, height, 0, 0);
 
 	delete[] pixels;
